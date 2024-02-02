@@ -8,3 +8,11 @@ param location string = resourceGroup().location
 ])
 param envinronmentType string
 
+module app 'modules/app-service.bicep' = {
+  name: 'appService'
+  params: {
+    location: location
+    environmentType: envinronmentType
+    appServiceAppName: 'toy-store-app'
+  }
+}
