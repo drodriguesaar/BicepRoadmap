@@ -8,7 +8,6 @@ var cosmosDBDatabaseName = 'FlightTests'
 var cosmosDBContainerName = 'FlightTests'
 var cosmosDBContainerPartitionKey = '/droneId'
 
-//Parent resource, cosmos DB account
 resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
   name: cosmosDBAccountName
   location: location
