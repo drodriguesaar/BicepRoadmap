@@ -16,3 +16,5 @@ module appPlanAndApp 'modules/app-service.bicep' = {
     appServiceAppName: 'toy-store-app'
   }
 }
+
+//here Im gonna add the output of the app service module
