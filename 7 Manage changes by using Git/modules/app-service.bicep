@@ -32,3 +32,5 @@ resource appServiceApp 'Microsoft.Web/sites@2023-01-01' = {
     httpsOnly: true
   }
 }
+
+output appserviceplanid string = appServicePlan.id

@@ -8,8 +8,8 @@ param location string = resourceGroup().location
 ])
 param envinronmentType string
 
-module app 'modules/app-service.bicep' = {
-  name: 'appService'
+module appPlanAndApp 'modules/app-service.bicep' = {
+  name: 'appServicePlanAndAPp'
   params: {
     location: location
     environmentType: envinronmentType
