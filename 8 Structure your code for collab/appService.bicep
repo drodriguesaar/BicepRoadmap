@@ -22,9 +22,9 @@ param appInsightsStorageAccountApiVersion string
 
 var appUserAssignedIdentityName = guid(contributorRoleDefinitionId, resourceGroup().id)
 
-var appServiceAppName = 'toyApp${uniqueString(resourceGroup().id)}'
+var appServiceAppName = '${environmentType}-ToyApp-${uniqueString(resourceGroup().id)}'
 
-var appServicePlanName = take('toyAppServicePlan${uniqueString(resourceGroup().id)}', 24)
+var appServicePlanName = '${environmentType}-ToySrvPlan-${uniqueString(resourceGroup().id)}'
 
 var tags = {
   environment: environmentType
@@ -50,14 +50,16 @@ var environmentConfigurationMap = {
   }
 }
 
-resource hostingPlan 'Microsoft.Web/serverfarms@2020-06-01' = {
+var isProduction = (environmentType == 'Production')
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   name: appServicePlanName
   location: location
   sku: environmentConfigurationMap[environmentType].appServicePlan.sku
   tags: tags
 }
 
-resource AppInsightsWebSiteName 'Microsoft.Insights/components@2018-05-01-preview' = {
+resource appInsightsWebSiteName 'Microsoft.Insights/components@2020-02-02' = {
   name: 'AppInsights'
   location: location
   kind: 'web'
@@ -67,46 +69,29 @@ resource AppInsightsWebSiteName 'Microsoft.Insights/components@2018-05-01-previe
   }
 }
 
-resource appUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+resource appUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: appUserAssignedIdentityName
   location: location
   tags: tags
 }
 
-resource webSite 'Microsoft.Web/sites@2020-06-01' = {
+resource appServiceApp 'Microsoft.Web/sites@2023-01-01' = {
   name: appServiceAppName
   location: location
   tags: tags
   properties: {
-    serverFarmId: hostingPlan.id
+    serverFarmId: appServicePlan.id
     siteConfig: {
-      appSettings: (environmentType != 'Production') ? [] : [
+      appSettings: (isProduction) ? [
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: AppInsightsWebSiteName.properties.InstrumentationKey
+          value: appInsightsWebSiteName.properties.InstrumentationKey
         }
         {
           name: 'StorageAccountConnectionString'
           value: 'DefaultEndpointsProtocol=https;AccountName=${appInsightsStorageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(appInsightsStorageAccountId, appInsightsStorageAccountApiVersion).keys[0].value}'
         }
-      ]
-    }
-  }
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${appUserAssignedIdentity.id}': {}
+      ] : []
     }
   }
 }
-
-resource contributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(contributorRoleDefinitionId, resourceGroup().id)
-  properties: {
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', contributorRoleDefinitionId)
-    principalId: appUserAssignedIdentity.properties.principalId
-  }
-}
-
-

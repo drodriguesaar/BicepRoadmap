@@ -9,22 +9,20 @@ param location string = resourceGroup().location
 param environmentType string
 
 @secure()
-param sqlAdministratorLogin string
+param sqlServerAdministratorLogin string
 
 @secure()
-param sqlAdministratorLoginPassword string
+param sqlServerAdministratorLoginPassword string
 
+@secure()
 @description('The role definition id for the managed identity. Default value is Contributor Role.')
-param contributorRoleDefinitionId string = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-
-param storageAccountName string = 'toywebsite${uniqueString(resourceGroup().id)}'
+param contributorRoleDefinitionId string
 
 module storageAccount 'storageAccount.bicep' = {
   name: 'toyWebsiteStorageAccount'
   params: {
     environmentType: environmentType
     location: location
-    storageAccountName: storageAccountName
   }
 }
 
@@ -32,8 +30,8 @@ module dataBase 'dataBase.bicep' = {
   name: 'toyWebsiteDataBase'
   params: {
     environmentType: environmentType
-    sqlAdministratorLogin: sqlAdministratorLogin
-    sqlAdministratorLoginPassword: sqlAdministratorLoginPassword
+    sqlServerAdministratorLogin: sqlServerAdministratorLogin
+    sqlServerAdministratorLoginPassword: sqlServerAdministratorLoginPassword
     location: location
   }
 }

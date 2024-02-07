@@ -1,4 +1,3 @@
-
 @description('The location into which the resource will be deployed. Default value will be the location of the target resource group.')
 param location string = resourceGroup().location
 
@@ -9,9 +8,7 @@ param location string = resourceGroup().location
 @description('The type of environment you will provision your azure resources')
 param environmentType string
 
-@minLength(10)
-@maxLength(24)
-param storageAccountName string = 'toywebsite${uniqueString(resourceGroup().id)}'
+var storageAccountName = toLower(take('${environmentType}toysta${uniqueString(resourceGroup().id)}', 24))
 
 var blobContainerNames = [
   'productspecs'
@@ -23,20 +20,20 @@ var environmentConfigurationMap = {
   Production: {
     storageAccount: {
       sku: {
-        name: 'ZRS'
+        name: 'Premium_ZRS'
       }
     }
   }
   Test: {
     storageAccount: {
       sku: {
-        name: 'LRS'
+        name: 'Standard_LRS'
       }
     }
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
   location: location
   sku: environmentConfigurationMap[environmentType].storageAccount.sku
@@ -55,7 +52,6 @@ resource blobServiceContainers 'Microsoft.Storage/storageAccounts/blobServices/c
   name: blobContainerName
   parent: storageAccountBlobService
 }]
-
 
 output storageAccountId string = storageAccount.id
 output storageAccountName string = storageAccount.name

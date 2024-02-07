@@ -9,12 +9,12 @@ param location string = resourceGroup().location
 param environmentType string
 
 @secure()
-param sqlAdministratorLogin string
+param sqlServerAdministratorLogin string
 
 @secure()
-param sqlAdministratorLoginPassword string
+param sqlServerAdministratorLoginPassword string
 
-var sqlserverName = 'toywebsite${uniqueString(resourceGroup().id)}'
+var sqlserverName = '${environmentType}-ToyDb-${uniqueString(resourceGroup().id)}'
 
 var environmentConfigurationMap = {
   Production: {
@@ -35,18 +35,18 @@ var environmentConfigurationMap = {
 }
 
 
-resource sqlServer 'Microsoft.Sql/servers@2019-06-01-preview' = {
+resource sqlServer 'Microsoft.Sql/servers@2023-05-01-preview' = {
   name: sqlserverName
   location: location
   properties: {
-    administratorLogin: sqlAdministratorLogin
-    administratorLoginPassword: sqlAdministratorLoginPassword
+    administratorLogin: sqlServerAdministratorLogin
+    administratorLoginPassword: sqlServerAdministratorLoginPassword
     version: '12.0'
   }
 }
 
 var databaseName = 'ToyCompanyWebsite'
-resource sqlserverName_databaseName 'Microsoft.Sql/servers/databases@2020-08-01-preview' = {
+resource sqlserverName_databaseName 'Microsoft.Sql/servers/databases@2023-05-01-preview' = {
   parent: sqlServer
   name: databaseName
   location: location
@@ -57,7 +57,7 @@ resource sqlserverName_databaseName 'Microsoft.Sql/servers/databases@2020-08-01-
   }
 }
 
-resource sqlServerNameAllowAllAzureIPs 'Microsoft.Sql/servers/firewallRules@2014-04-01' = {
+resource sqlServerNameAllowAllAzureIPs 'Microsoft.Sql/servers/firewallRules@2023-05-01-preview' = {
   parent: sqlServer
   name: 'AllowAllAzureIPs'
   properties: {
